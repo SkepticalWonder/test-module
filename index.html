@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive Training Module</title>
+
+  <!-- Reveal.js CDN -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/theme/black.css" id="theme">
+
+  <style>
+    :root {
+      --accent: #28d17c;
+      --accent-dark: #12864d;
+      --danger: #ff5b5b;
+      --panel: rgba(255,255,255,0.10);
+      --panel-strong: rgba(255,255,255,0.18);
+    }
+
+    .reveal { font-family: Arial, Helvetica, sans-serif; }
+    .reveal h1, .reveal h2, .reveal h3 { text-transform: none; }
+    .reveal h1 { font-size: 2.3em; }
+    .reveal h2 { font-size: 1.5em; }
+    .reveal p, .reveal li { font-size: 0.75em; line-height: 1.35; }
+    .reveal small { color: #d6d6d6; }
+
+    .tag {
+      display: inline-block;
+      padding: 0.35rem 0.7rem;
+      border: 1px solid var(--accent);
+      border-radius: 999px;
+      color: var(--accent);
+      font-size: 0.42em;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+    }
+
+    .module-card {
+      background: var(--panel);
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 20px;
+      padding: 1rem 1.2rem;
+      margin: 0.7rem auto;
+      width: 82%;
+      text-align: left;
+      box-shadow: 0 18px 45px rgba(0,0,0,0.25);
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      align-items: stretch;
+    }
+
+    .choice, .scenario-choice {
+      display: block;
+      width: 100%;
+      margin: 0.45rem 0;
+      padding: 0.75rem 0.9rem;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.25);
+      background: var(--panel);
+      color: white;
+      font-size: 0.58em;
+      text-align: left;
+      cursor: pointer;
+      transition: transform 120ms ease, background 120ms ease, border-color 120ms ease;
+    }
+
+    .choice:hover, .scenario-choice:hover {
+      transform: translateY(-2px);
+      border-color: var(--accent);
+      background: var(--panel-strong);
+    }
+
+    .choice.correct { border-color: var(--accent); background: rgba(40,209,124,0.25); }
+    .choice.incorrect { border-color: var(--danger); background: rgba(255,91,91,0.22); }
+
+    .feedback {
+      margin-top: 0.7rem;
+      min-height: 2rem;
+      font-size: 0.62em;
+      color: #f4f4f4;
+    }
+
+    .progress-wrap {
+      position: fixed;
+      left: 0;
+      bottom: 0;
+      width: 100%;
+      height: 10px;
+      background: rgba(255,255,255,0.15);
+      z-index: 40;
+    }
+
+    #customProgress {
+      height: 100%;
+      width: 0%;
+      background: var(--accent);
+      transition: width 250ms ease;
+    }
+
+    .score-pill {
+      position: fixed;
+      right: 16px;
+      top: 12px;
+      z-index: 40;
+      background: rgba(0,0,0,0.55);
+      border: 1px solid rgba(255,255,255,0.25);
+      padding: 0.4rem 0.7rem;
+      border-radius: 999px;
+      font-size: 0.9rem;
+      color: white;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      border: 4px solid var(--accent);
+      color: var(--accent);
+      font-weight: bold;
+      margin-bottom: 1rem;
+      background: rgba(40,209,124,0.1);
+    }
+
+    .button-link {
+      display: inline-block;
+      margin: 0.4rem;
+      padding: 0.65rem 1rem;
+      border-radius: 12px;
+      background: var(--accent);
+      color: #062713 !important;
+      font-size: 0.55em;
+      font-weight: bold;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    .button-link.secondary {
+      background: transparent;
+      color: white !important;
+      border: 1px solid rgba(255,255,255,0.35);
+    }
+
+    input[type="text"] {
+      width: min(560px, 82%);
+      padding: 0.7rem;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.35);
+      background: rgba(255,255,255,0.1);
+      color: white;
+      font-size: 0.6em;
+      text-align: center;
+    }
+
+    @media print {
+      .score-pill, .progress-wrap, .controls { display: none !important; }
+      .reveal section { page-break-after: always; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="score-pill">Score: <span id="score">0</span>/<span id="possible">0</span></div>
+  <div class="progress-wrap"><div id="customProgress"></div></div>
+
+  <div class="reveal">
+    <div class="slides">
+
+      <section data-background-gradient="linear-gradient(135deg, #062713, #101828)">
+        <span class="tag">Interactive Training Module</span>
+        <h1>Safety & Readiness Training</h1>
+        <p>Learn the core expectations, practice decisions, and complete a short knowledge check.</p>
+        <small>Use arrow keys, spacebar, or swipe to move through the module.</small>
+      </section>
+
+      <section>
+        <h2>Before We Begin</h2>
+        <div class="module-card">
+          <p>Enter your name so the completion screen can personalize your results.</p>
+          <p><input id="learnerName" type="text" placeholder="Your name"></p>
+          <button class="button-link" onclick="saveName()">Save Name</button>
+          <p class="feedback" id="nameFeedback"></p>
+        </div>
+      </section>
+
+      <section>
+        <h2>Learning Goals</h2>
+        <div class="two-col">
+          <div class="module-card">
+            <h3>Know</h3>
+            <p>Identify safe habits, reporting expectations, and common warning signs.</p>
+          </div>
+          <div class="module-card">
+            <h3>Do</h3>
+            <p>Choose the best response in realistic situations before an issue becomes a problem.</p>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Core Idea</h2>
+        <div class="module-card">
+          <p>Safety is not a rule sheet. It is a shared habit of noticing risks, communicating clearly, and stopping work when something seems wrong.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2>Quick Check 1</h2>
+        <p>What is the best first response when you notice an unsafe condition?</p>
+        <button class="choice" data-correct="false" onclick="answerQuiz(this)">Ignore it if nobody is hurt yet.</button>
+        <button class="choice" data-correct="true" onclick="answerQuiz(this)">Pause, warn nearby people, and report it.</button>
+        <button class="choice" data-correct="false" onclick="answerQuiz(this)">Wait until the end of the activity.</button>
+        <p class="feedback"></p>
+      </section>
+
+      <section>
+        <h2>Three-Part Safety Habit</h2>
+        <div class="module-card">
+          <ol>
+            <li><strong>Notice:</strong> Look for hazards before starting.</li>
+            <li><strong>Speak:</strong> Communicate concerns early.</li>
+            <li><strong>Act:</strong> Stop, fix, or get help when needed.</li>
+          </ol>
+        </div>
+      </section>
+
+      <section>
+        <h2>Scenario</h2>
+        <div class="module-card">
+          <p>You see a teammate using a tool without the required protective equipment. They say, “It will only take a second.”</p>
+          <button class="scenario-choice" onclick="showScenario('best')">Ask them to stop and get the right equipment first.</button>
+          <button class="scenario-choice" onclick="showScenario('ok')">Stand nearby and watch carefully.</button>
+          <button class="scenario-choice" onclick="showScenario('bad')">Let them finish quickly.</button>
+          <p id="scenarioFeedback" class="feedback"></p>
+        </div>
+      </section>
+
+      <section>
+        <h2>Quick Check 2</h2>
+        <p>Which statement best shows strong communication?</p>
+        <button class="choice" data-correct="false" onclick="answerQuiz(this)">“You are doing that wrong.”</button>
+        <button class="choice" data-correct="true" onclick="answerQuiz(this)">“Pause for a second. I think we need eye protection before continuing.”</button>
+        <button class="choice" data-correct="false" onclick="answerQuiz(this)">“Someone else should probably deal with this.”</button>
+        <p class="feedback"></p>
+      </section>
+
+      <section>
+        <h2>Decision Practice</h2>
+        <div class="module-card">
+          <p><strong>Choose the safest path:</strong> You smell something hot near electronics.</p>
+          <button class="choice" data-correct="true" onclick="answerQuiz(this)">Turn off power if safe, alert the lead/mentor/supervisor, and keep people away.</button>
+          <button class="choice" data-correct="false" onclick="answerQuiz(this)">Keep testing until the problem is obvious.</button>
+          <button class="choice" data-correct="false" onclick="answerQuiz(this)">Spray water on it immediately.</button>
+          <p class="feedback"></p>
+        </div>
+      </section>
+
+      <section>
+        <h2>Reflection</h2>
+        <div class="module-card">
+          <p>Think of one situation where stopping early could prevent a bigger problem.</p>
+          <textarea id="reflection" rows="5" style="width:100%; border-radius:12px; padding:0.7rem; font-size:0.55em; background:rgba(255,255,255,0.1); color:white; border:1px solid rgba(255,255,255,0.3);" placeholder="Type your response here..."></textarea>
+          <button class="button-link" onclick="saveReflection()">Save Reflection</button>
+          <p class="feedback" id="reflectionFeedback"></p>
+        </div>
+      </section>
+
+      <section>
+        <h2>Final Check</h2>
+        <p>What should you do if you are unsure whether something is safe?</p>
+        <button class="choice" data-correct="false" onclick="answerQuiz(this)">Guess and continue.</button>
+        <button class="choice" data-correct="true" onclick="answerQuiz(this)">Stop and ask someone responsible before continuing.</button>
+        <button class="choice" data-correct="false" onclick="answerQuiz(this)">Only ask if someone else notices.</button>
+        <p class="feedback"></p>
+      </section>
+
+      <section data-background-gradient="linear-gradient(135deg, #101828, #062713)">
+        <div class="badge">DONE</div>
+        <h2>Training Complete</h2>
+        <p id="completionText">You completed the module.</p>
+        <p id="finalScore"></p>
+        <button class="button-link" onclick="printCertificate()">Print / Save Completion Page</button>
+        <button class="button-link secondary" onclick="resetModule()">Reset Module</button>
+      </section>
+
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.js"></script>
+  <script>
+    let score = Number(localStorage.getItem('trainingScore') || 0);
+    let answered = JSON.parse(localStorage.getItem('answeredQuestions') || '{}');
+    let learnerName = localStorage.getItem('learnerName') || '';
+    let reflection = localStorage.getItem('reflection') || '';
+
+    Reveal.initialize({
+      hash: true,
+      slideNumber: true,
+      controls: true,
+      progress: false,
+      transition: 'slide'
+    });
+
+    function totalQuestions() {
+      return document.querySelectorAll('.choice[data-correct="true"]').length;
+    }
+
+    function updateDisplay() {
+      document.getElementById('score').textContent = score;
+      document.getElementById('possible').textContent = totalQuestions();
+      const totalSlides = Reveal.getTotalSlides();
+      const current = Reveal.getSlidePastCount() + 1;
+      document.getElementById('customProgress').style.width = Math.round((current / totalSlides) * 100) + '%';
+
+      const displayName = learnerName ? learnerName : 'You';
+      document.getElementById('completionText').textContent = displayName + ' completed the training module.';
+      document.getElementById('finalScore').textContent = 'Knowledge check score: ' + score + ' / ' + totalQuestions();
+    }
+
+    function saveName() {
+      const input = document.getElementById('learnerName');
+      learnerName = input.value.trim();
+      localStorage.setItem('learnerName', learnerName);
+      document.getElementById('nameFeedback').textContent = learnerName ? 'Name saved.' : 'Name cleared.';
+      updateDisplay();
+    }
+
+    function answerQuiz(button) {
+      const slide = button.closest('section');
+      const slideIndex = Reveal.getSlidePastCount();
+      const key = 'q' + slideIndex;
+      const buttons = slide.querySelectorAll('.choice');
+      const feedback = slide.querySelector('.feedback');
+
+      if (answered[key]) {
+        feedback.textContent = 'This question has already been answered.';
+        return;
+      }
+
+      buttons.forEach(btn => btn.disabled = true);
+      const correct = button.dataset.correct === 'true';
+
+      if (correct) {
+        score += 1;
+        button.classList.add('correct');
+        feedback.textContent = 'Correct. That response reduces risk and communicates clearly.';
+      } else {
+        button.classList.add('incorrect');
+        slide.querySelector('[data-correct="true"]').classList.add('correct');
+        feedback.textContent = 'Not quite. The safest response is shown in green.';
+      }
+
+      answered[key] = true;
+      localStorage.setItem('trainingScore', score);
+      localStorage.setItem('answeredQuestions', JSON.stringify(answered));
+      updateDisplay();
+    }
+
+    function showScenario(type) {
+      const feedback = document.getElementById('scenarioFeedback');
+      if (type === 'best') {
+        feedback.textContent = 'Best choice: stop the action before the risk becomes an injury.';
+      } else if (type === 'ok') {
+        feedback.textContent = 'Watching does not remove the hazard. Speak up before work continues.';
+      } else {
+        feedback.textContent = 'Unsafe choice. Short tasks can still cause real injuries.';
+      }
+    }
+
+    function saveReflection() {
+      reflection = document.getElementById('reflection').value.trim();
+      localStorage.setItem('reflection', reflection);
+      document.getElementById('reflectionFeedback').textContent = reflection ? 'Reflection saved.' : 'Add a short reflection before saving.';
+    }
+
+    function printCertificate() {
+      window.print();
+    }
+
+    function resetModule() {
+      localStorage.removeItem('trainingScore');
+      localStorage.removeItem('answeredQuestions');
+      localStorage.removeItem('learnerName');
+      localStorage.removeItem('reflection');
+      window.location.reload();
+    }
+
+    Reveal.on('slidechanged', updateDisplay);
+    Reveal.on('ready', () => {
+      document.getElementById('learnerName').value = learnerName;
+      document.getElementById('reflection').value = reflection;
+      updateDisplay();
+    });
+  </script>
+</body>
+</html>
